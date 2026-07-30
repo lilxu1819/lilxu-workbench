@@ -1,0 +1,32 @@
+{
+  "name": "lilxu 的工作台",
+  "short_name": "工作台",
+  "description": "Better Me · 2026 个人管理系统",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#E9E3F5",
+  "theme_color": "#1E1B24",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "icons/icon-v15.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-192-v15.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512-v15.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
