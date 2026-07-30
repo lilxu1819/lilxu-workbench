@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#1E1B24">
+  <title>lilxu 的工作台</title>
+  <link rel="manifest" href="manifest.json?v=33">
+  <link rel="stylesheet" href="styles.css?v=33">
+  <link rel="icon" href="icons/icon-v15.svg?v=33" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192-v15.png?v=33">
+  <script>
+    // 强制清理旧版 service worker 缓存，确保中间内容区恢复紫色
+    (function() {
+      if (!('serviceWorker' in navigator)) return;
+      var flag = 'lx_workbench_cache_cleared_v33';
+      if (localStorage.getItem(flag)) return;
+      localStorage.setItem(flag, '1');
+      navigator.serviceWorker.getRegistrations().then(function(regs) {
+        return Promise.all(regs.map(function(r) { return r.unregister(); }));
+      }).then(function() {
+        window.location.reload(true);
+      }).catch(function() {
+        window.location.reload(true);
+      });
+    })();
+  </script>
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-logo">xu</div>
+        <div class="brand-text">
+          <h1>lilxu 的工作台</h1>
+          <p>Better Me &middot; 2026</p>
+        </div>
+      </div>
+      <div class="header-right">
+        <span class="conn-status" id="conn-status">
+          <span class="conn-dot conn-dot-off"></span>
+          <span class="conn-text">未连接</span>
+        </span>
+        <span class="brand-time" id="now-time">--:--:--</span>
+        <button class="btn-icon" id="btn-settings" title="设置">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="app-body">
+      <aside class="sidebar">
+        <div class="nav-group">
+          <a href="#dashboard" class="nav-item active" data-view="dashboard">
+            <span class="nav-emoji">📊</span> 仪表盘
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-label">目标与成长</div>
+          <a href="#goals" class="nav-item" data-view="goals">
+            <span class="nav-emoji">🎯</span> 目标
+          </a>
+          <a href="#life-quests" class="nav-item" data-view="life-quests">
+            <span class="nav-emoji">🧭</span> 人生支线
+          </a>
+          <a href="#reflections" class="nav-item" data-view="reflections">
+            <span class="nav-emoji">🌟</span> lilxu thinks
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-label">工作</div>
+          <a href="#daily-work" class="nav-item" data-view="daily-work">
+            <span class="nav-emoji">✅</span> 日常工作
+          </a>
+          <a href="#projects" class="nav-item" data-view="projects">
+            <span class="nav-emoji">📁</span> 项目池
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-label">日常执行</div>
+          <a href="#daily-tasks" class="nav-item" data-view="daily-tasks">
+            <span class="nav-emoji">📝</span> 每日todo
+          </a>
+          <a href="#weekly-tasks" class="nav-item" data-view="weekly-tasks">
+            <span class="nav-emoji">📅</span> 周任务
+          </a>
+          <a href="#inbox" class="nav-item" data-view="inbox">
+            <span class="nav-emoji">💭</span> 碎碎念
+          </a>
+          <a href="#important-dates" class="nav-item" data-view="important-dates">
+            <span class="nav-emoji">🎂</span> 重要日子
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-label">读书</div>
+          <a href="#books" class="nav-item" data-view="books">
+            <span class="nav-emoji">📚</span> lilxu reads
+          </a>
+        </div>
+      </aside>
+
+      <main class="main">
+        <!-- 仪表盘 -->
+        <section class="view active" id="view-dashboard">
+          <!-- 顶部标题行 -->
+          <div class="dash-header">
+            <div>
+              <div class="dash-month" id="dash-month"></div>
+              <div class="dash-date-en" id="dash-date-en"></div>
+            </div>
+            <div class="dash-greet" id="dash-greet"></div>
+          </div>
+
+          <!-- 日历 + 天气并排 -->
+          <div class="dash-top-row">
+            <div class="card dash-cal-card">
+              <div class="mini-cal-title" id="mini-cal-title"></div>
+              <div class="mini-cal-weekdays">
+                <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
+              </div>
+              <div class="mini-cal-grid" id="mini-cal-grid"></div>
+            </div>
+            <div class="card dash-weather-card" id="weather-card">
+              <div class="weather-loading">正在获取天气…</div>
+            </div>
+          </div>
+
+          <!-- 今日聚焦鼓励条 -->
+          <div class="dash-focus" id="dash-focus"></div>
+
+          <!-- 统计卡片 -->
+          <div class="dash-stats">
+            <div class="card dash-stat">
+              <div class="stat-label">🎯 目标完成</div>
+              <div class="stat-row">
+                <span class="stat-num" id="goals-done">0</span>
+                <span class="stat-total" id="goals-total">/ 0</span>
+              </div>
+              <div class="stat-bar"><div class="stat-bar-fill" id="goals-bar" style="width:0%"></div></div>
+            </div>
+            <div class="card dash-stat">
+              <div class="stat-label">✅ 今日任务</div>
+              <div class="stat-row">
+                <span class="stat-num" id="tasks-done">0</span>
+                <span class="stat-total" id="tasks-total">/ 0</span>
+              </div>
+              <div class="stat-bar"><div class="stat-bar-fill" id="tasks-bar" style="width:0%"></div></div>
+            </div>
+          </div>
+
+          <!-- 今天任务列表 -->
+          <div class="card dash-today-card">
+            <div class="dash-section-row">
+              <span class="section-hint">📝 今天 · 按时间排列</span>
+              <button class="btn-add" data-table="daily_tasks" data-task-type="daily">+ 添加</button>
+            </div>
+            <div id="dash-today-list"></div>
+          </div>
+
+          <!-- 重要日子 -->
+          <div class="card dash-dates-card">
+            <div class="dash-section-row">
+              <span class="section-hint">🎂 接下来的重要日子</span>
+            </div>
+            <ul class="dates-list" id="dates-list"></ul>
+          </div>
+
+          <!-- FAB 快速添加 -->
+          <button class="fab" id="dash-fab" title="快速添加 todo">+</button>
+        </section>
+
+        <!-- 目标 -->
+        <section class="view" id="view-goals">
+          <div class="view-title-row">
+            <h2>🎯 目标</h2>
+            <button class="btn-add" data-table="goals">+ 新目标</button>
+          </div>
+          <div class="tabs">
+            <button class="tab active" data-goal-type="yearly">年度</button>
+            <button class="tab" data-goal-type="quarterly">季度</button>
+            <button class="tab" data-goal-type="monthly">月度</button>
+          </div>
+          <div class="item-list" id="goals-list"></div>
+        </section>
+
+        <!-- 人生支线 -->
+        <section class="view" id="view-life-quests">
+          <div class="view-title-row">
+            <h2>🧭 人生支线</h2>
+            <button class="btn-add" data-table="life_quests">+ 新支线</button>
+          </div>
+          <div class="item-list" id="life-quests-list"></div>
+        </section>
+
+        <!-- 日常工作 -->
+        <section class="view" id="view-daily-work">
+          <div class="view-title-row">
+            <h2>✅ 日常工作</h2>
+          </div>
+          <div class="daily-work-grid">
+            <div class="card">
+              <div class="card-label">今日待办</div>
+              <ul class="mini-list" id="dw-today-list"></ul>
+            </div>
+            <div class="card">
+              <div class="card-label">进行中的项目</div>
+              <ul class="mini-list" id="dw-projects-list"></ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- 项目池 -->
+        <section class="view" id="view-projects">
+          <div class="view-title-row">
+            <h2>📁 项目池</h2>
+            <button class="btn-add" data-table="projects">+ 新项目</button>
+          </div>
+          <div class="item-list" id="projects-list"></div>
+        </section>
+
+        <!-- 每日任务 -->
+        <section class="view" id="view-daily-tasks">
+          <div class="view-title-row">
+            <h2>📝 每日todo</h2>
+            <button class="btn-reminder" id="reminder-toggle" title="到点提醒（需保持页面打开）">⏰ 提醒</button>
+            <button class="btn-add" data-table="daily_tasks" data-task-type="daily">+ 新任务</button>
+          </div>
+          <div class="item-list" id="daily-tasks-list"></div>
+        </section>
+
+        <!-- 周任务 -->
+        <section class="view" id="view-weekly-tasks">
+          <div class="view-title-row">
+            <h2>📅 周任务</h2>
+            <button class="btn-add" data-table="daily_tasks" data-task-type="weekly">+ 新任务</button>
+          </div>
+          <div class="item-list" id="weekly-tasks-list"></div>
+        </section>
+
+        <!-- 碎碎念 -->
+        <section class="view" id="view-inbox">
+          <div class="view-title-row">
+            <h2>💭 lilxu 的碎碎念</h2>
+          </div>
+          <div class="inbox-input-wrap">
+            <input type="text" class="inbox-input" id="inbox-input" placeholder="随便说点什么...回车记下">
+            <button class="btn btn-primary btn-sm" id="inbox-add">添加</button>
+          </div>
+          <div class="item-list" id="inbox-list"></div>
+        </section>
+
+        <!-- 重要日子 -->
+        <section class="view" id="view-important-dates">
+          <div class="view-title-row">
+            <h2>🎂 重要日子</h2>
+            <button class="btn-add" data-table="important_dates">+ 新日子</button>
+          </div>
+          <div class="item-list" id="important-dates-list"></div>
+        </section>
+
+        <!-- lilxu thinks -->
+        <section class="view" id="view-reflections">
+          <div class="reads-header">
+            <h2>🌟 lilxu thinks</h2>
+            <p class="reads-quote">「复盘是成长的最短路径」</p>
+          </div>
+          <div class="reads-tabs">
+            <button class="reads-tab active" data-thinks-tab="event">🔄 事件复盘</button>
+            <button class="reads-tab" data-thinks-tab="mood">😊 情绪记录</button>
+            <button class="reads-tab" data-thinks-tab="free">💭 自由复盘</button>
+          </div>
+
+          <!-- 事件复盘 -->
+          <div class="reads-pane active" data-thinks-pane="event">
+            <div class="view-title-row">
+              <span class="section-hint">复盘某件事的得失</span>
+              <button class="btn-add" data-table="reflections" data-reflection-type="event">+ 新复盘</button>
+            </div>
+            <div class="item-list" id="reflection-event-list"></div>
+          </div>
+
+          <!-- 情绪记录 -->
+          <div class="reads-pane" data-thinks-pane="mood">
+            <div class="view-title-row">
+              <span class="section-hint">记录当下的心情和能量状态</span>
+              <button class="btn-add" data-table="reflections" data-reflection-type="mood">+ 记录心情</button>
+            </div>
+            <div class="item-list" id="reflection-mood-list"></div>
+          </div>
+
+          <!-- 自由复盘 -->
+          <div class="reads-pane" data-thinks-pane="free">
+            <div class="view-title-row">
+              <span class="section-hint">不设模板，自由写下任何想法</span>
+              <button class="btn-add" data-table="reflections" data-reflection-type="free">+ 写点啥</button>
+            </div>
+            <div class="item-list" id="reflection-free-list"></div>
+          </div>
+        </section>
+
+        <!-- lilxu reads -->
+        <section class="view" id="view-books">
+          <div class="reads-header">
+            <h2>📚 lilxu reads</h2>
+            <p class="reads-quote">「无论如何读书」</p>
+          </div>
+          <div class="reads-tabs">
+            <button class="reads-tab active" data-reads-tab="shelf">📚 书架</button>
+            <button class="reads-tab" data-reads-tab="checkin">✏️ 打卡</button>
+            <button class="reads-tab" data-reads-tab="notes">🗒️ 笔记</button>
+          </div>
+
+          <!-- 书架 -->
+          <div class="reads-pane active" data-reads-pane="shelf">
+            <div class="view-title-row">
+              <span class="section-hint">收藏和记录你读过的书</span>
+              <button class="btn-add" data-table="books">+ 新书</button>
+            </div>
+            <div class="filter-tabs">
+              <button class="filter-tab active" data-book-filter="all">全部</button>
+              <button class="filter-tab" data-book-filter="reading">在读</button>
+              <button class="filter-tab" data-book-filter="want">想读</button>
+              <button class="filter-tab" data-book-filter="done">已读</button>
+            </div>
+            <div class="book-grid" id="bookshelf-list"></div>
+          </div>
+
+          <!-- 打卡 -->
+          <div class="reads-pane" data-reads-pane="checkin">
+            <div class="view-title-row">
+              <span class="section-hint">记录今天的阅读进度和心情</span>
+            </div>
+            <div class="card checkin-form">
+              <div class="form-row">
+                <div class="form-group" style="flex:1;margin:0">
+                  <label>📚 书名</label>
+                  <select id="checkin-book"></select>
+                </div>
+                <div class="form-group" style="width:120px;margin:0">
+                  <label>📄 页数</label>
+                  <input type="number" id="checkin-pages" min="0" placeholder="0" value="0">
+                </div>
+                <div class="form-group" style="width:150px;margin:0">
+                  <label>📅 日期</label>
+                  <input type="date" id="checkin-date">
+                </div>
+              </div>
+              <div class="form-group">
+                <label>心情</label>
+                <div class="mood-tags" id="mood-tags">
+                  <span class="mood-tag" data-mood="happy">😊 开心</span>
+                  <span class="mood-tag" data-mood="thinking">🤔 思考</span>
+                  <span class="mood-tag" data-mood="relaxed">😌 放松</span>
+                  <span class="mood-tag" data-mood="mindblown">🤯 震撼</span>
+                  <span class="mood-tag" data-mood="sleepy">😴 困了</span>
+                  <span class="mood-tag" data-mood="moved">😢 感动</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>感想</label>
+                <textarea id="checkin-reflection" placeholder="今天读到了什么？有什么想法？" rows="2"></textarea>
+              </div>
+              <button class="btn btn-primary" id="checkin-submit">✏️ 打卡</button>
+            </div>
+            <div class="item-list" id="reading-logs-list" style="margin-top:16px"></div>
+          </div>
+
+          <!-- 笔记 -->
+          <div class="reads-pane" data-reads-pane="notes">
+            <div class="view-title-row">
+              <span class="section-hint">摘录和整理书里的精彩片段</span>
+            </div>
+            <div class="card note-form">
+              <div class="form-row">
+                <div class="form-group" style="flex:1;margin:0">
+                  <label>📚 书名</label>
+                  <select id="note-book"></select>
+                </div>
+                <div class="form-group" style="width:150px;margin:0">
+                  <label>类型</label>
+                  <select id="note-type">
+                    <option value="excerpt">摘抄</option>
+                    <option value="summary">总结</option>
+                    <option value="insight">感悟</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>内容</label>
+                <textarea id="note-content" placeholder="写下你的笔记..." rows="3"></textarea>
+              </div>
+              <div class="form-row">
+                <div class="form-group" style="flex:1;margin:0">
+                  <label>页码（可选）</label>
+                  <input type="text" id="note-page" placeholder="如 p.42">
+                </div>
+                <div class="form-group" style="margin:0;align-self:flex-end">
+                  <button class="btn btn-primary" id="note-submit">🗒️ 添加笔记</button>
+                </div>
+              </div>
+            </div>
+            <div class="item-list" id="book-notes-list" style="margin-top:16px"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- 设置弹窗 -->
+  <div class="modal-overlay hidden" id="settings-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>设置</h3>
+        <button class="modal-close" data-close="settings-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Project URL</label>
+          <input type="text" id="settings-url" placeholder="https://xxxxx.supabase.co" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label>anon public key</label>
+          <textarea id="settings-key" rows="3" placeholder="eyJ... 开头的长字符串" autocomplete="off"></textarea>
+          <p class="form-hint">这不是密码，是公开 key，设计来放在前端的。</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-close="settings-modal">取消</button>
+        <button class="btn btn-primary" id="settings-save">保存并连接</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 通用编辑弹窗 -->
+  <div class="modal-overlay hidden" id="edit-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="edit-title">新增</h3>
+        <button class="modal-close" data-close="edit-modal">&times;</button>
+      </div>
+      <div class="modal-body" id="edit-body"></div>
+      <div class="modal-footer">
+        <button class="btn btn-danger hidden" id="edit-delete">删除</button>
+        <div class="footer-spacer"></div>
+        <button class="btn btn-secondary" data-close="edit-modal">取消</button>
+        <button class="btn btn-primary" id="edit-save">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 书籍详情弹窗（含滑动条）-->
+  <div class="modal-overlay hidden" id="book-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="book-modal-title">编辑书籍</h3>
+        <button class="modal-close" data-close="book-modal">&times;</button>
+      </div>
+      <div class="modal-body" id="book-modal-body"></div>
+      <div class="modal-footer">
+        <button class="btn btn-danger hidden" id="book-delete">删除</button>
+        <div class="footer-spacer"></div>
+        <button class="btn btn-secondary" data-close="book-modal">取消</button>
+        <button class="btn btn-primary" id="book-save">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 复盘弹窗 -->
+  <div class="modal-overlay hidden" id="reflection-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="reflection-modal-title">新复盘</h3>
+        <button class="modal-close" data-close="reflection-modal">&times;</button>
+      </div>
+      <div class="modal-body" id="reflection-modal-body"></div>
+      <div class="modal-footer">
+        <button class="btn btn-danger hidden" id="reflection-delete">删除</button>
+        <div class="footer-spacer"></div>
+        <button class="btn btn-secondary" data-close="reflection-modal">取消</button>
+        <button class="btn btn-primary" id="reflection-save">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast hidden" id="toast"></div>
+
+  <script src="app.js?v=33"></script>
+</body>
+</html>
