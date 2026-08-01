@@ -677,10 +677,10 @@
           '<div class="weather-main"><span class="weather-icon">' + info[1] + '</span><span class="weather-temp">' + temp + '\u00B0</span></div>' +
           '<div class="weather-desc">' + info[0] + '</div>' +
           '<div class="weather-meta"><span>\u4F53\u611F ' + feel + '\u00B0</span><span>\u6E7F\u5EA6 ' + humidity + '%</span>' + windTag + '</div>' +
+        weatherActionsHtml() +
         '</div>' +
         rightHtml +
-      '</div>' +
-      weatherActionsHtml();
+      '</div>';
     bindWeatherActions();
   }
 
@@ -1973,7 +1973,7 @@
   // ===== Service Worker =====
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
-      navigator.serviceWorker.register('sw.js?v=33').catch(function (err) {
+      navigator.serviceWorker.register('sw.js?v=34').catch(function (err) {
         console.warn('Service Worker 注册失败:', err);
       });
     });
