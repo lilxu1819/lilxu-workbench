@@ -1654,3 +1654,89 @@ input, textarea, select { font-family: inherit; }
 }
 .insp-item.insp-clickable:hover .insp-cta { filter: brightness(1.06); }
 
+/* 灵感页标签页 */
+.insp-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 14px 0 4px;
+}
+.insp-tab {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(157, 143, 200, 0.25);
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.insp-tab:hover { border-color: var(--primary); color: var(--primary); }
+.insp-tab.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+.insp-pane { margin-top: 4px; }
+
+/* 经典案例库 */
+#classic-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 4px;
+}
+.cl-item {
+  border: 1px solid rgba(157, 143, 200, 0.18);
+  border-radius: 16px;
+  padding: 16px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  cursor: pointer;
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+.cl-item:hover {
+  box-shadow: 0 6px 20px rgba(157, 143, 200, 0.2);
+  transform: translateY(-2px);
+}
+.cl-top { display: flex; }
+.cl-cat {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(157, 143, 200, 0.14);
+  color: #6b5ba8;
+}
+.cl-cat-brand  { background: rgba(99, 132, 255, 0.14); color: #3b5bdb; }
+.cl-cat-social { background: rgba(255, 90, 130, 0.14); color: #d83b6a; }
+.cl-cat-event  { background: rgba(255, 168, 76, 0.16); color: #c97a14; }
+.cl-cat-collab { background: rgba(0, 184, 148, 0.14); color: #0b8b6f; }
+.cl-cat-content{ background: rgba(157, 143, 200, 0.16); color: #6b5ba8; }
+.cl-cat-intl  { background: rgba(120, 120, 140, 0.16); color: #5a5a6e; }
+.cl-meta { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.cl-brand { font-weight: 700; color: var(--text-2); }
+.cl-year { color: var(--text-3); background: rgba(0,0,0,0.04); padding: 1px 8px; border-radius: 999px; }
+.cl-title { font-size: 15px; font-weight: 700; color: var(--text); line-height: 1.4; }
+.cl-summary { font-size: 12.5px; color: var(--text-2); line-height: 1.6; }
+.cl-takeaway {
+  font-size: 12.5px;
+  color: var(--text-2);
+  line-height: 1.6;
+  background: rgba(157, 143, 200, 0.08);
+  border-left: 3px solid var(--primary);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+.cl-take-label { font-weight: 700; color: var(--primary); margin-right: 4px; }
+.cl-foot { margin-top: auto; padding-top: 6px; }
+.cl-learn {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--primary);
+  text-decoration: none;
+}
+.cl-learn:hover { text-decoration: underline; }
+
