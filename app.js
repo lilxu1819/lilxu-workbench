@@ -28,7 +28,7 @@
     daily_tasks: 'daily_tasks', inbox_tasks: 'inbox_tasks',
     projects: 'projects', important_dates: 'important_dates',
     reading_logs: 'reading_logs', book_notes: 'book_notes',
-    reflections: 'reflections'
+    reflections: 'reflections', inspiration: 'inspiration'
   };
 
   // 状态标签
@@ -108,7 +108,7 @@
   var state = {
     goals: [], life_quests: [], books: [], daily_tasks: [],
     inbox_tasks: [], projects: [], important_dates: [],
-    reading_logs: [], book_notes: [], reflections: []
+    reading_logs: [], book_notes: [], reflections: [], inspiration: []
   };
 
   // 当前选中的状态
@@ -116,6 +116,8 @@
   var currentBookFilter = 'all';
   var selectedMood = '';
   var currentBookEdit = { id: null, isNew: true };
+  var inspFilterCat = 'all';
+  var inspFilterRegion = 'all';
 
   // ===== 工具函数 =====
   function escapeHtml(s) {
@@ -174,6 +176,7 @@
       switchView(item.dataset.view);
     });
   });
+  initInspirationFilters();
 
   var initialView = location.hash.slice(1) || 'dashboard';
   switchView(initialView);
@@ -293,12 +296,12 @@
       fetchAll('goals'), fetchAll('life_quests'), fetchAll('books'),
       fetchAll('daily_tasks'), fetchAll('inbox_tasks'), fetchAll('projects'),
       fetchAll('important_dates'), fetchAll('reading_logs'), fetchAll('book_notes'),
-      fetchAll('reflections')
+      fetchAll('reflections'), fetchAll('inspiration')
     ]);
     state.goals = results[0]; state.life_quests = results[1]; state.books = results[2];
     state.daily_tasks = results[3]; state.inbox_tasks = results[4]; state.projects = results[5];
     state.important_dates = results[6]; state.reading_logs = results[7]; state.book_notes = results[8];
-    state.reflections = results[9];
+    state.reflections = results[9]; state.inspiration = results[10];
     renderAll();
     fetchWeather();
     startReminderLoop();
@@ -349,6 +352,8 @@
     renderDailyWork();
     populateBookSelects();
     renderReflections();
+    renderInspirationCard();
+    renderInspirationPage();
   }
 
   // 仪表盘
@@ -516,6 +521,88 @@
       html += '</span>';
     }
     grid.innerHTML = html;
+  }
+
+  // ===== 灵感多现 =====
+  function yesterdayStr() {
+    var d = new Date();
+    d.setDate(d.getDate() - 1);
+    var y = d.getFullYear();
+    var m = String(d.getMonth() + 1).padStart(2, '0');
+    var day = String(d.getDate()).padStart(2, '0');
+    return y + '-' + m + '-' + day;
+  }
+
+  function inspItemHtml(item) {
+    var catBadge = item.category === 'douyin'
+      ? '<span class="insp-badge insp-badge-douyin">抖音</span>'
+      : '<span class="insp-badge insp-badge-marketing">营销</span>';
+    var region = item.region ? '<span class="insp-region">' + escapeHtml(item.region) + '</span>' : '';
+    var src = item.source_url
+      ? '<a class="insp-src" href="' + escapeHtml(item.source_url) + '" target="_blank" rel="noopener">来源 ↗</a>'
+      : '';
+    var tags = (item.tags && item.tags.length)
+      ? '<div class="insp-tags">' + item.tags.map(function (t) { return '<span class="insp-tag">#' + escapeHtml(t) + '</span>'; }).join('') + '</div>'
+      : '';
+    return '<div class="insp-item">' +
+      '<div class="insp-item-head">' + catBadge + region + src + '</div>' +
+      '<div class="insp-title">' + escapeHtml(item.title) + '</div>' +
+      '<div class="insp-summary">' + escapeHtml(item.summary) + '</div>' +
+      tags +
+    '</div>';
+  }
+
+  function renderInspirationCard() {
+    var el = document.getElementById('dash-insp-list');
+    if (!el) return;
+    var today = todayStr();
+    var items = (state.inspiration || []).filter(function (x) { return x.date === today; });
+    if (items.length === 0) {
+      el.innerHTML = '<div class="dash-empty">今日灵感生成中 · 每天 08:00 自动更新</div>';
+      return;
+    }
+    el.innerHTML = items.map(inspItemHtml).join('');
+  }
+
+  function renderInspirationPage() {
+    var el = document.getElementById('insp-list');
+    if (!el) return;
+    var items = (state.inspiration || []).slice();
+    if (inspFilterCat !== 'all') items = items.filter(function (x) { return x.category === inspFilterCat; });
+    if (inspFilterRegion !== 'all') items = items.filter(function (x) { return x.region === inspFilterRegion; });
+    if (items.length === 0) {
+      el.innerHTML = '<div class="dash-empty">还没有灵感内容 · 每天 08:00 自动生成</div>';
+      return;
+    }
+    var groups = {};
+    items.forEach(function (x) {
+      var d = x.date || '未知';
+      (groups[d] = groups[d] || []).push(x);
+    });
+    var dates = Object.keys(groups).sort().reverse();
+    var today = todayStr();
+    el.innerHTML = dates.map(function (d) {
+      var label = d === today ? '今天' : (d === yesterdayStr() ? '昨天' : d);
+      return '<div class="insp-group"><div class="insp-group-title">' + label + '</div>' +
+        groups[d].map(inspItemHtml).join('') + '</div>';
+    }).join('');
+  }
+
+  function initInspirationFilters() {
+    document.querySelectorAll('#insp-filter-cat .insp-filter').forEach(function (b) {
+      b.addEventListener('click', function () {
+        inspFilterCat = b.dataset.cat;
+        document.querySelectorAll('#insp-filter-cat .insp-filter').forEach(function (x) { x.classList.toggle('active', x === b); });
+        renderInspirationPage();
+      });
+    });
+    document.querySelectorAll('#insp-filter-region .insp-filter').forEach(function (b) {
+      b.addEventListener('click', function () {
+        inspFilterRegion = b.dataset.region;
+        document.querySelectorAll('#insp-filter-region .insp-filter').forEach(function (x) { x.classList.toggle('active', x === b); });
+        renderInspirationPage();
+      });
+    });
   }
 
   // 天气获取（Open-Meteo，免费不要 key）
@@ -1973,7 +2060,7 @@
   // ===== Service Worker =====
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
-      navigator.serviceWorker.register('sw.js?v=34').catch(function (err) {
+      navigator.serviceWorker.register('sw.js?v=35').catch(function (err) {
         console.warn('Service Worker 注册失败:', err);
       });
     });
