@@ -561,7 +561,14 @@
       el.innerHTML = '<div class="dash-empty">今日灵感生成中 · 每天 08:00 自动更新</div>';
       return;
     }
-    el.innerHTML = items.map(inspItemHtml).join('');
+    var mk = items.filter(function (x) { return x.category === 'marketing'; });
+    var dy = items.filter(function (x) { return x.category === 'douyin'; });
+    function grp(title, arr) {
+      if (arr.length === 0) return '';
+      return '<div class="insp-card-group"><div class="insp-card-group-title">' + title +
+        ' <span class="cnt">' + arr.length + '</span></div>' + arr.map(inspItemHtml).join('') + '</div>';
+    }
+    el.innerHTML = grp('📈 营销灵感', mk) + grp('🎵 抖音热点', dy);
   }
 
   function renderInspirationPage() {
@@ -2060,7 +2067,7 @@
   // ===== Service Worker =====
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
-      navigator.serviceWorker.register('sw.js?v=35').catch(function (err) {
+      navigator.serviceWorker.register('sw.js?v=36').catch(function (err) {
         console.warn('Service Worker 注册失败:', err);
       });
     });
