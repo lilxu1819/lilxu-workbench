@@ -28,7 +28,7 @@
     daily_tasks: 'daily_tasks', inbox_tasks: 'inbox_tasks',
     projects: 'projects', important_dates: 'important_dates',
     reading_logs: 'reading_logs', book_notes: 'book_notes',
-    reflections: 'reflections', inspiration: 'inspiration'
+    reflections: 'reflections', inspiration: 'inspiration', classic: 'inspiration_classic'
   };
 
   // 状态标签
@@ -108,7 +108,7 @@
   var state = {
     goals: [], life_quests: [], books: [], daily_tasks: [],
     inbox_tasks: [], projects: [], important_dates: [],
-    reading_logs: [], book_notes: [], reflections: [], inspiration: []
+    reading_logs: [], book_notes: [], reflections: [], inspiration: [], classic: []
   };
 
   // 当前选中的状态
@@ -119,6 +119,9 @@
   var inspFilterCat = 'all';
   var inspFilterRegion = 'all';
   var inspSearch = '';
+  var inspTab = 'daily';
+  var classicSearch = '';
+  var classicFilterCat = 'all';
 
   // ===== 工具函数 =====
   function escapeHtml(s) {
@@ -297,12 +300,12 @@
       fetchAll('goals'), fetchAll('life_quests'), fetchAll('books'),
       fetchAll('daily_tasks'), fetchAll('inbox_tasks'), fetchAll('projects'),
       fetchAll('important_dates'), fetchAll('reading_logs'), fetchAll('book_notes'),
-      fetchAll('reflections'), fetchAll('inspiration')
+      fetchAll('reflections'), fetchAll('inspiration'), fetchAll('inspiration_classic')
     ]);
     state.goals = results[0]; state.life_quests = results[1]; state.books = results[2];
     state.daily_tasks = results[3]; state.inbox_tasks = results[4]; state.projects = results[5];
     state.important_dates = results[6]; state.reading_logs = results[7]; state.book_notes = results[8];
-    state.reflections = results[9]; state.inspiration = results[10];
+    state.reflections = results[9]; state.inspiration = results[10]; state.classic = results[11];
     renderAll();
     fetchWeather();
     startReminderLoop();
@@ -355,6 +358,7 @@
     renderReflections();
     renderInspirationCard();
     renderInspirationPage();
+    renderClassic();
   }
 
   // 仪表盘
@@ -627,6 +631,69 @@
     }).join('');
   }
 
+  var CLASSIC_CAT = {
+    brand:   { e: '🏷️', t: '品牌营销' },
+    social:  { e: '🔥', t: '社媒热点' },
+    event:   { e: '🎉', t: '造节活动' },
+    collab:  { e: '🤝', t: '联名话题' },
+    content: { e: '💬', t: '内容情感' },
+    intl:    { e: '🌍', t: '国际经典' }
+  };
+
+  function classicItemHtml(item) {
+    var c = CLASSIC_CAT[item.category] || { e: '📌', t: '案例' };
+    var brand = item.brand ? '<span class="cl-brand">' + escapeHtml(item.brand) + '</span>' : '';
+    var year = item.year ? '<span class="cl-year">' + escapeHtml(item.year) + '</span>' : '';
+    var meta = (brand || year)
+      ? '<div class="cl-meta">' + brand + year + '</div>'
+      : '';
+    var summary = item.summary ? '<div class="cl-summary">' + escapeHtml(item.summary) + '</div>' : '';
+    var takeaway = item.takeaway
+      ? '<div class="cl-takeaway"><span class="cl-take-label">💡 可借鉴</span>' + escapeHtml(item.takeaway) + '</div>'
+      : '';
+    var tags = (item.tags && item.tags.length)
+      ? '<div class="insp-tags">' + item.tags.map(function (t) { return '<span class="insp-tag">#' + escapeHtml(t) + '</span>'; }).join('') + '</div>'
+      : '';
+    var learnUrl = 'https://www.baidu.com/s?wd=' + encodeURIComponent((item.title || '') + ' ' + (item.brand || ''));
+    var src = '<a class="cl-learn" href="' + learnUrl + '" target="_blank" rel="noopener">深入了解 ↗</a>';
+    return '<div class="cl-item" data-url="' + learnUrl + '">' +
+      '<div class="cl-top"><span class="cl-cat cl-cat-' + escapeHtml(item.category || 'other') + '">' + c.e + ' ' + c.t + '</span></div>' +
+      meta +
+      '<div class="cl-title">' + escapeHtml(item.title || '') + '</div>' +
+      summary +
+      takeaway +
+      tags +
+      '<div class="cl-foot">' + src + '</div>' +
+    '</div>';
+  }
+
+  function renderClassic() {
+    var el = document.getElementById('classic-list');
+    if (!el) return;
+    var items = (state.classic || []).slice().sort(function (a, b) {
+      var ya = String(a.year || '0'), yb = String(b.year || '0');
+      return ya < yb ? 1 : (ya > yb ? -1 : 0);
+    });
+    if (classicFilterCat !== 'all') items = items.filter(function (x) { return x.category === classicFilterCat; });
+    if (classicSearch) {
+      var q = classicSearch;
+      items = items.filter(function (x) {
+        var hay = [x.title, x.brand, x.summary, x.takeaway, (x.tags || []).join(' ')]
+          .filter(Boolean).join(' ').toLowerCase();
+        return hay.indexOf(q) !== -1;
+      });
+    }
+    if (items.length === 0) {
+      if ((state.classic || []).length === 0) {
+        el.innerHTML = '<div class="dash-empty">经典案例库还是空的 · 在 Supabase 跑 supabase-inspiration-classic.sql 即可载入</div>';
+      } else {
+        el.innerHTML = '<div class="dash-empty">没有匹配「' + escapeHtml(classicSearch) + '」的经典案例</div>';
+      }
+      return;
+    }
+    el.innerHTML = items.map(classicItemHtml).join('');
+  }
+
   function initInspirationFilters() {
     document.querySelectorAll('#insp-filter-cat .insp-filter').forEach(function (b) {
       b.addEventListener('click', function () {
@@ -642,7 +709,7 @@
         renderInspirationPage();
       });
     });
-    // 关键词搜索
+    // 关键词搜索（灵感独立页）
     var search = document.getElementById('insp-search');
     if (search) {
       search.addEventListener('input', function () {
@@ -650,13 +717,45 @@
         renderInspirationPage();
       });
     }
-    // 整卡点击跳转原文（事件委托，渲染后依然有效）
-    ['dash-insp-list', 'insp-list'].forEach(function (id) {
+    // 标签页切换：每日灵感 / 经典案例
+    document.querySelectorAll('.insp-tab').forEach(function (b) {
+      b.addEventListener('click', function () {
+        inspTab = b.dataset.tab;
+        document.querySelectorAll('.insp-tab').forEach(function (x) { x.classList.toggle('active', x === b); });
+        var daily = document.getElementById('insp-pane-daily');
+        var classic = document.getElementById('insp-pane-classic');
+        if (daily) daily.hidden = (inspTab !== 'daily');
+        if (classic) classic.hidden = (inspTab !== 'classic');
+        if (inspTab === 'classic') renderClassic(); else renderInspirationPage();
+      });
+    });
+    // 经典案例分类筛选
+    document.querySelectorAll('#classic-filter-cat .insp-filter').forEach(function (b) {
+      b.addEventListener('click', function () {
+        classicFilterCat = b.dataset.cat;
+        document.querySelectorAll('#classic-filter-cat .insp-filter').forEach(function (x) { x.classList.toggle('active', x === b); });
+        renderClassic();
+      });
+    });
+    // 经典案例搜索
+    var csearch = document.getElementById('classic-search');
+    if (csearch) {
+      csearch.addEventListener('input', function () {
+        classicSearch = csearch.value.trim().toLowerCase();
+        renderClassic();
+      });
+    }
+    // 整卡点击跳转（事件委托，渲染后依然有效）
+    ['dash-insp-list', 'insp-list', 'classic-list'].forEach(function (id) {
       var box = document.getElementById(id);
       if (!box) return;
       box.addEventListener('click', function (e) {
-        var node = e.target.closest ? e.target.closest('.insp-item') : null;
+        var node = e.target.closest
+          ? e.target.closest('.insp-item, .cl-item')
+          : null;
         if (!node) return;
+        // 点到链接本身时不重复打开
+        if (e.target.tagName === 'A') return;
         var url = node.getAttribute('data-url');
         if (url) window.open(url, '_blank', 'noopener');
       });
@@ -2118,7 +2217,7 @@
   // ===== Service Worker =====
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
-      navigator.serviceWorker.register('sw.js?v=37').catch(function (err) {
+      navigator.serviceWorker.register('sw.js?v=38').catch(function (err) {
         console.warn('Service Worker 注册失败:', err);
       });
     });
