@@ -1471,7 +1471,26 @@ input, textarea, select { font-family: inherit; }
 
 .dash-insp-card { padding: 16px; }
 
-#dash-insp-list { display: flex; flex-direction: column; gap: 12px; margin-top: 4px; }
+#dash-insp-list { display: flex; flex-direction: column; gap: 16px; margin-top: 4px; }
+
+.insp-card-group { display: flex; flex-direction: column; gap: 10px; }
+.insp-card-group-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+.insp-card-group-title .cnt {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-3);
+  background: rgba(0, 0, 0, 0.04);
+  padding: 1px 7px;
+  border-radius: 999px;
+}
 
 .insp-item {
   border: 1px solid rgba(157, 143, 200, 0.18);
