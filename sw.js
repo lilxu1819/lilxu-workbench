@@ -1,13 +1,13 @@
-const CACHE_NAME = 'lilxu-workbench-v36';
+const CACHE_NAME = 'lilxu-workbench-v37';
 const ASSETS = [
   './',
   './index.html',
-  './styles.css?v=36',
-  './app.js?v=36',
-  './manifest.json?v=36',
-  './icons/icon-v15.svg?v=36',
-  './icons/icon-192-v15.png?v=36',
-  './icons/icon-512-v15.png?v=36'
+  './styles.css?v=37',
+  './app.js?v=37',
+  './manifest.json?v=37',
+  './icons/icon-v15.svg?v=37',
+  './icons/icon-192-v15.png?v=37',
+  './icons/icon-512-v15.png?v=37'
 ];
 
 self.addEventListener('install', (event) => {
