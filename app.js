@@ -118,6 +118,7 @@
   var currentBookEdit = { id: null, isNew: true };
   var inspFilterCat = 'all';
   var inspFilterRegion = 'all';
+  var inspSearch = '';
 
   // ===== 工具函数 =====
   function escapeHtml(s) {
@@ -533,21 +534,38 @@
     return y + '-' + m + '-' + day;
   }
 
+  function inspDomainOf(url) {
+    try { return new URL(url).hostname.replace(/^www\./, ''); } catch (e) { return ''; }
+  }
+
   function inspItemHtml(item) {
     var catBadge = item.category === 'douyin'
       ? '<span class="insp-badge insp-badge-douyin">抖音</span>'
       : '<span class="insp-badge insp-badge-marketing">营销</span>';
     var region = item.region ? '<span class="insp-region">' + escapeHtml(item.region) + '</span>' : '';
-    var src = item.source_url
-      ? '<a class="insp-src" href="' + escapeHtml(item.source_url) + '" target="_blank" rel="noopener">来源 ↗</a>'
+    var domain = inspDomainOf(item.source_url);
+    var fav = domain
+      ? '<img class="insp-fav" src="https://icons.duckduckgo.com/ip3/' + encodeURIComponent(domain) + '.ico" alt="" loading="lazy" onerror="this.style.display=\'none\'">'
+      : '';
+    var srcName = item.source_name ? '<span class="insp-srcname">' + escapeHtml(item.source_name) + '</span>' : '';
+    var domainEl = domain ? '<span class="insp-domain">' + escapeHtml(domain) + '</span>' : '';
+    var cta = item.source_url ? '<span class="insp-cta">查看原文 ↗</span>' : '';
+    var sourceRow = (item.source_url || item.source_name)
+      ? '<div class="insp-source">' + fav + srcName + domainEl + '<span class="insp-spacer"></span>' + cta + '</div>'
+      : '';
+    var thumb = item.image_url
+      ? '<img class="insp-thumb" src="' + escapeHtml(item.image_url) + '" alt="" loading="lazy" onerror="this.style.display=\'none\'">'
       : '';
     var tags = (item.tags && item.tags.length)
       ? '<div class="insp-tags">' + item.tags.map(function (t) { return '<span class="insp-tag">#' + escapeHtml(t) + '</span>'; }).join('') + '</div>'
       : '';
-    return '<div class="insp-item">' +
-      '<div class="insp-item-head">' + catBadge + region + src + '</div>' +
+    return '<div class="insp-item' + (item.source_url ? ' insp-clickable' : '') + '"' +
+      (item.source_url ? ' data-url="' + escapeHtml(item.source_url) + '"' : '') + '>' +
+      thumb +
+      '<div class="insp-item-head">' + catBadge + region + '</div>' +
       '<div class="insp-title">' + escapeHtml(item.title) + '</div>' +
       '<div class="insp-summary">' + escapeHtml(item.summary) + '</div>' +
+      sourceRow +
       tags +
     '</div>';
   }
@@ -577,8 +595,22 @@
     var items = (state.inspiration || []).slice();
     if (inspFilterCat !== 'all') items = items.filter(function (x) { return x.category === inspFilterCat; });
     if (inspFilterRegion !== 'all') items = items.filter(function (x) { return x.region === inspFilterRegion; });
+    if (inspSearch) {
+      var q = inspSearch;
+      items = items.filter(function (x) {
+        var hay = [
+          x.title, x.summary, x.source_name, x.source_url, x.region,
+          (x.tags || []).join(' ')
+        ].filter(Boolean).join(' ').toLowerCase();
+        return hay.indexOf(q) !== -1;
+      });
+    }
     if (items.length === 0) {
-      el.innerHTML = '<div class="dash-empty">还没有灵感内容 · 每天 08:00 自动生成</div>';
+      if ((state.inspiration || []).length === 0) {
+        el.innerHTML = '<div class="dash-empty">还没有灵感内容 · 每天 08:00 自动生成</div>';
+      } else {
+        el.innerHTML = '<div class="dash-empty">没有匹配「' + escapeHtml(inspSearch) + '」的灵感 · 试试别的关键词</div>';
+      }
       return;
     }
     var groups = {};
@@ -608,6 +640,25 @@
         inspFilterRegion = b.dataset.region;
         document.querySelectorAll('#insp-filter-region .insp-filter').forEach(function (x) { x.classList.toggle('active', x === b); });
         renderInspirationPage();
+      });
+    });
+    // 关键词搜索
+    var search = document.getElementById('insp-search');
+    if (search) {
+      search.addEventListener('input', function () {
+        inspSearch = search.value.trim().toLowerCase();
+        renderInspirationPage();
+      });
+    }
+    // 整卡点击跳转原文（事件委托，渲染后依然有效）
+    ['dash-insp-list', 'insp-list'].forEach(function (id) {
+      var box = document.getElementById(id);
+      if (!box) return;
+      box.addEventListener('click', function (e) {
+        var node = e.target.closest ? e.target.closest('.insp-item') : null;
+        if (!node) return;
+        var url = node.getAttribute('data-url');
+        if (url) window.open(url, '_blank', 'noopener');
       });
     });
   }
@@ -2067,7 +2118,7 @@
   // ===== Service Worker =====
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
-      navigator.serviceWorker.register('sw.js?v=36').catch(function (err) {
+      navigator.serviceWorker.register('sw.js?v=37').catch(function (err) {
         console.warn('Service Worker 注册失败:', err);
       });
     });
