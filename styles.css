@@ -762,6 +762,17 @@ input, textarea, select { font-family: inherit; }
 }
 .task-group-done .list-item { opacity: 0.6; }
 
+/* 已完成任务按日期分子组 */
+.done-date-subheader {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-3);
+  padding: 10px 4px 6px;
+  margin-top: 4px;
+  border-bottom: 1px dashed rgba(0,0,0,0.06);
+}
+.done-date-subheader:first-child { padding-top: 4px; margin-top: 0; }
+
 /* Badges */
 .badge {
   display: inline-block; padding: 2px 8px;
