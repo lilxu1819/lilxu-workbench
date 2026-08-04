@@ -1004,6 +1004,21 @@
       '</div></div>';
   }
 
+  // 日期转友好标签（今天 / 昨天 / MM-DD / YYYY-MM-DD）
+  function formatDateLabel(dateStr) {
+    var today = todayStr();
+    if (dateStr === today) return '今天';
+    var d = new Date(dateStr + 'T00:00:00');
+    var n = new Date(today + 'T00:00:00');
+    var diff = Math.round((n - d) / (1000 * 60 * 60 * 24));
+    if (diff === 1) return '昨天';
+    var y = d.getFullYear();
+    var m = String(d.getMonth() + 1).padStart(2, '0');
+    var day = String(d.getDate()).padStart(2, '0');
+    var label = m + '-' + day;
+    return y === n.getFullYear() ? label : y + '-' + label;
+  }
+
   // 任务列表（按 task_type 过滤，daily 按日期分组）
   function renderTasks(taskType, listId) {
     var list = document.getElementById(listId);
@@ -1068,9 +1083,26 @@
     }
 
     if (doneList.length > 0) {
-      doneList.sort(sortByDate);
+      // 已完成按日期分子组，最近日期放最上
+      var doneByDate = {};
+      doneList.forEach(function (t) {
+        var d = t.due_date || '未排期';
+        if (!doneByDate[d]) doneByDate[d] = [];
+        doneByDate[d].push(t);
+      });
+      var doneDates = Object.keys(doneByDate).sort(function (a, b) {
+        if (a === '未排期') return 1;
+        if (b === '未排期') return -1;
+        return b.localeCompare(a);
+      });
+
       html += '<details class="task-group-done"><summary>✅ 已完成 · ' + doneList.length + '</summary>';
-      html += doneList.map(function (item) { return renderTaskItem('daily_tasks', item); }).join('');
+      doneDates.forEach(function (d) {
+        var items = doneByDate[d];
+        var dateLabel = d === '未排期' ? '未排期' : formatDateLabel(d);
+        html += '<div class="done-date-subheader">' + dateLabel + ' · ' + items.length + '</div>';
+        html += items.map(function (item) { return renderTaskItem('daily_tasks', item); }).join('');
+      });
       html += '</details>';
     }
 
@@ -2217,7 +2249,7 @@
   // ===== Service Worker =====
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
-      navigator.serviceWorker.register('sw.js?v=38').catch(function (err) {
+      navigator.serviceWorker.register('sw.js?v=39').catch(function (err) {
         console.warn('Service Worker 注册失败:', err);
       });
     });
